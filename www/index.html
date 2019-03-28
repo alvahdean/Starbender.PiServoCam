@@ -1,54 +1,217 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-  <head>
-    <title>MJPG-streamer</title>
-    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
-    <link rel="stylesheet" href="style.css" type="text/css" />
-    <!--[if IE 6]>
-    <link rel="stylesheet" href="fix.css" type="text/css" />
-    <![endif]-->
-  </head>
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="charset" value="utf-8">
+        <title>PanTilt HAT</title>
+        <style type="text/css">
+            .cambutton {
+                width:40px;
+                height:30px;
+                background:#F0F0F0;
+                position:relative;
+            }
+            .camimage {
+                width:640px;
+                height:480px;
+                position:absolute;
+                float: left;
+                top: 150px;
+                border:3px outset #DDDDDD;
+            }
+            .camlocation {
+                width:100px;
+                height:90px;
+                background:#F0F0F0;
+                position:absolute;
+                float: left;
+                left: 150px;
+                text-align:center;
+                border:3px outset #DDDDDD;
+            }
+            .main {
+                width:120px;
+                height:90px;
+                background:#F0F0F0;
+                position:absolute;
+                float: left;
+                border:3px outset #DDDDDD;
+            }
+            .main ul, .main li {
+                list-style:none;
+                margin:5;
+                padding:5;
+            }
+            .main li {
+                width:40px;
+                height:20px;
+                border:3px outset #DDDDDD;
+                background:#CCCCCC;
+                position:absolute;
+                cursor:pointer;
+                line-height:20px;
+                text-align:center;
+            }
+            .main .up    { left:50%; margin-left:-20px; top:0; }
+            .main .down  { left:50%; margin-left:-20px; bottom:0; }
+            .main .left  { top:50%;  margin-top:-10px;    left:0; }
+            .main .right { top:50%;  margin-top:-10px;    right:0; }
+        </style>
+    </head>
 
-  <body>
-    <div id="sidebar">
-      <h1>MJPG-Streamer Demo Pages</h1>
-      <h2>a resource-friendly streaming application</h2>
+    <body onload="createImageLayer();">
+        <b>Pan Tilt HAT: Web Interface</b>
+        <hr>
+        <div class="main">
+            <ul>
+                <li class="up" data-action="tilt:-1">Up</li>
+                <li class="down" data-action="tilt:+1">Down</li>
+                <li class="left" data-action="pan:+1">Left</li>
+                <li class="right" data-action="pan:-1">Right</li>
+            </ul>
+        </div>
+        
+        <div  class="camlocation">
+            <label for="curr_pan">Current Pan</label>
+            <input id="curr_pan" id="curr_pan" disabled size="5">
+            <br>
+            <label for="curr_tilt">Current Tilt</label>
+            <input name="curr_tilt"  id="curr_tilt" disabled size="5">
+        </div>
+        
+        <div id="webcam" class="camimage">
+            <noscript>
+                <img src="./?action=snapshot" width=640 height=480/>
+            </noscript>
+        </div>
 
-      <div id="menu">
-        <a class="active" href="index.html">Home</a>
-        <a href="static.html">Static</a>
-        <a href="stream.html">Stream</a>
-        <a href="java.html">Java</a>
-        <a href="javascript.html">Javascript</a>
-        <a href="videolan.html">VideoLAN</a>
-        <a target="_blank" onClick="window.open(this.href, '_blank'); return false;" href="control.htm">Control</a>
-      </div>
+        <script
+            src="https://code.jquery.com/jquery-3.1.1.min.js"
+            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+            crossorigin="anonymous"></script>
 
-      <h3>Version info:</h3>
-      <p>v0.1 (Okt 22, 2007)</p>
-    </div>
+        <script type="text/javascript">
+            var imageNr = 0; // Serial number of current image
+            var finished = new Array(); // References to img objects which have finished downloading
+            var paused = false;
+            var imgUrl = "http://bellatrix.starbendersystems.com:10080/?action=snapshot";
+            var current_pan = 0;
+            var current_tilt = 0;
+            var move_speed = 100; // Delay between increments in ms
+            var current_direction = null;
+            var current_angle = 0;
+            var interval = null;
 
-    <div id="content">
-      <h1>About</h1>
-      <h2>Details about the M-JPEG streamer</h2>
+            $(function(){
+                $(window).on('keydown',function(e){
+                    clearInterval(interval);
 
-      <h3>Congratulations</h3>
-      <p>You sucessfully managed to install this streaming webserver. If you can see this page, you can also access the stream of JPGs, which can originate from your webcam for example. This installation consists of these example pages and you may customize the look and content.</p>
+                    switch(e.keyCode){
+                        case 38: // Arrow Up
+                            current_direction = 'tilt';
+                            current_angle = 1;
+                            interval = setInterval(movecam,move_speed);
+                            break;
+                        case 40: // Arrow Down
+                            current_direction = 'tilt';
+                            current_angle = -1;
+                            interval = setInterval(movecam,move_speed);
+                            break;
+                        case 37: // Arrow Left
+                            current_direction = 'pan';
+                            current_angle = 1;
+                            interval = setInterval(movecam,move_speed);
+                            break;
+                        case 39: // Arrow Right
+                            current_direction = 'pan';
+                            current_angle = -1;
+                            interval = setInterval(movecam,move_speed);
+                            break;
+                    }
+                });
 
-      <img src="example.jpg" width="512" height="160" alt="just an image" />
-      <p>The reason for developing this software was the need of a simple and ressource friendly streaming application for Linux-UVC compatible webcams. The predecessor <i>uvc-streamer</i> is working well, but i wanted to implement a few more ideas. For instance, plugins can be used to process the images. One input plugin copies images to a global variable, multiple output plugins can access those images. For example this webpage is served by the <i>output_http.so</i> plugin.</p>
+                $(window).on('keyup',function(e){clearInterval(interval)});
+                
+                $('.main')
+                .on('mousedown','li',function(e){
+                   e.preventDefault();
+                   clearInterval(interval);
 
-      <a href="static.html"><img src="./?action=snapshot" width="170" height="128" alt="static image example" /></a>
-      <p>The image displayed here was grabbed by the input plugin. The HTTP request contains the GET parameters <i>action=snapshot</i>. This requests one single picture from the image-input. To display another example, just click on the picture.</p>
+                   var obj = $(this);
+                   var action = obj.data('action');
+                   current_direction = action.split(':')[0];
+                   current_angle = parseInt(action.split(':')[1]);
 
-      <h3>About the examples</h3>
-      <p>To view the stream with any browser you may try the <i>javascript</i> or <i>java</i> subpages. Firefox is able to display the M-JPEG-stream directly.</p>
+                   interval = setInterval(movecam,move_speed);
+               })
+               .on('mouseup','li',function(e){
+                   clearInterval(interval);
+               });
 
-      <h3>About this server</h3>
-      <p>This server is running a software written for the MJPG-streamer project. The MJPG-streamer developers can not be made responsible for installations of this software.</p>
+               getPosition();
+            });
 
-      <p>&copy; The <a href="http://mjpg-streamer.sf.net">MJPG-streamer team</a> | Design by <a href="http://andreasviklund.com">Andreas Viklund</a></p>
-    </div>
-  </body>
+            function movecam(){
+                if(current_direction == 'pan'){
+                    current_pan += current_angle;
+                    if(current_pan < 0) current_pan = 0;
+                    if(current_pan > 180) current_pan = 180;
+                    angle = current_pan;
+                }
+
+                if(current_direction == 'tilt'){
+                    current_tilt += current_angle;
+                    if(current_tilt < 0) current_tilt = 0;
+                    if(current_tilt > 180) current_tilt = 180;
+                    angle = current_tilt;
+                }
+
+                var url='/api/' + current_direction + '/' + angle;
+                $.get(url, function(data, status) {
+                    current_pan=data.pan;
+                    current_tilt=data.tilt;
+                    $("#curr_tilt").val(current_tilt);
+                    $("#curr_pan").val(current_pan);
+                    });
+                createImageLayer();
+            }
+
+            function getPosition() {
+                var url='/api/position';
+                $.get(url, function(data, status) {
+                    current_pan=data.pan;
+                    current_tilt=data.tilt;
+                    $("#curr_tilt").val(current_tilt);
+                    $("#curr_pan").val(current_pan);
+                    });
+            }            
+
+            function createImageLayer() {
+                var img = new Image();
+                img.style.position = "absolute";
+                img.style.zIndex = -1;
+                img.onload = imageOnload;
+                img.onclick = imageOnclick;
+                img.src = imgUrl + "&n=" + (++imageNr);
+                var webcam = document.getElementById("webcam");
+                webcam.insertBefore(img, webcam.firstChild);
+            }
+
+            // Two layers are always present (except at the very beginning), to avoid flicker
+            function imageOnload() {
+                this.style.zIndex = imageNr; // Image finished, bring to front!
+                while (1 < finished.length) {
+                    var del = finished.shift(); // Delete old image(s) from document
+                    del.parentNode.removeChild(del);
+                }
+                finished.push(this);
+                if (!paused) createImageLayer();
+            }
+
+            function imageOnclick() { // Clicking on the image will pause the stream
+                paused = !paused;
+                if (!paused) createImageLayer();
+            }
+
+        </script>
+    </body>   
 </html>

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import io
+import os
 from time import sleep
 import pantilthat
 from sys import exit
@@ -32,6 +33,7 @@ def movecam(direction, angle):
     if(angle<-90 or angle>90):
         return getPosition()
 
+
     print("PANTILT: Operation:["+direction+"], Angle:["+str(angle)+"]")
     if direction == 'pan':
         pantilthat.pan(angle)
@@ -41,4 +43,14 @@ def movecam(direction, angle):
     return getPosition()
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=9595, debug=True)
+    listen_port = os.environ['UI_SERVER_PORT']
+    if listem_port == "":
+        listen_port = 9595
+    listen_addr = os.environ['UI_SERVER_ADDR']
+    if listem_addr == "":
+        listen_addr = '0.0.0.0'
+    debug_on = os.environ['UI_SERVER_DEBUG'] != ""
+    
+    print "Starting listener: " + listen_addr + ":" + listen_port
+    print "Debug: " + debug_on
+    app.run(host=listen_addr, port=listem_port, debug=debug_on)
