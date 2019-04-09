@@ -6,12 +6,14 @@ from time import sleep
 import pantilthat
 from sys import exit
 
+
 try:
     from flask import Flask, render_template, send_file, jsonify
 except ImportError:
     exit("This script requires the flask module\nInstall with: sudo pip install flask")
 
-app = Flask(__name__)
+#app = Flask(__name__)
+app = Flask(__name__, template_folder="/usr/local/web/Starbender.PiServoCam/www")
 
 @app.route('/')
 def home():
@@ -44,13 +46,13 @@ def movecam(direction, angle):
 
 if __name__ == "__main__":
     listen_port = os.environ['UI_SERVER_PORT']
-    if listem_port == "":
+    if listen_port == "":
         listen_port = 9595
     listen_addr = os.environ['UI_SERVER_ADDR']
-    if listem_addr == "":
+    if listen_addr == "":
         listen_addr = '0.0.0.0'
     debug_on = os.environ['UI_SERVER_DEBUG'] != ""
     
-    print "Starting listener: " + listen_addr + ":" + listen_port
-    print "Debug: " + debug_on
-    app.run(host=listen_addr, port=listem_port, debug=debug_on)
+    print("Starting listener: " + listen_addr + ":" + listen_port)
+    print("Debug: " + str(debug_on))
+    app.run(host=listen_addr, port=listen_port, debug=debug_on)

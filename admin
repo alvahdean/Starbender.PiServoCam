@@ -3,7 +3,7 @@
 action=$1
 lockfile=".state_lock"
 CAM_SERVER_PORT="10080"
-CAM_OPTIONS="-ex auto -vf -hf -x 640 -y 480 -fps 5"
+CAM_OPTIONS="-ex auto -vf -ex night -drc high -hf -x 640 -y 480 -fps 5"
 UI_SERVER_ADDR="0.0.0.0"
 UI_SERVER_PORT="9595"
 UI_SERVER_DEBUG="1"
@@ -21,7 +21,7 @@ if [ "$action" = "start" ]; then
     else 
         touch $lockfile
         echo "Starting camera stream..."
-        mjpg_streamer -o "output_http.so -w ./www -p $(CAM_SERVER_PORT)" -i "input_raspicam.so $(CAM_OPTIONS)"&
+        mjpg_streamer -o "output_http.so -w ./www -p $CAM_SERVER_PORT" -i "input_raspicam.so $CAM_OPTIONS"&
 
         echo "Starting UI server..."
         ./pthserver.py &
