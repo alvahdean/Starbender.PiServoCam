@@ -28,16 +28,16 @@ if [ "$action" = "start" ]; then
         fi
 elif [ "$action" = "stop" ]; then
     echo "Shutting down UI server..."
-    pgrep pthserver | xargs kill
+    pgrep -f pthserver | xargs kill
 
     echo "Shutting down camera stream..."
-    pgrep mjpg_streamer | xargs kill
+    pgrep -f mjpg_streamer | xargs kill
 
     rm $lockfile
 elif [ "$action" = "status" ]; then
     echo "Proccess status"
-    pgrep mjpg_streamer
-    pgrep pthserver
+    pgrep -f mjpg_streamer
+    pgrep -f pthserver
 else
     echo "Invalid action '$action'."
     echo "Usage: $0  start|stop|status"
