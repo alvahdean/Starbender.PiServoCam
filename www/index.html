@@ -58,7 +58,8 @@
         </style>
     </head>
 
-    <body onload="createImageLayer();">
+    <body>
+    <!--<body onload="createImageLayer();">-->
         <b>Pan Tilt HAT: Web Interface</b>
         <hr>
         <div class="main">
@@ -78,15 +79,17 @@
             <input name="curr_tilt"  id="curr_tilt" disabled size="5">
         </div>
         
+        <!--
         <div id="webcam" class="camimage">
             <noscript>
                 <img src="./?action=snapshot" width=640 height=480/>
             </noscript>
-        </div>
+        </div> 
+        -->>
         <div >
             <iframe id="webcam_frame" 
             src="http://bellatrix.starbendersystems.com:10080/living_room_stream.html" 
-            style="height:600px;width:70000px;border=none;"
+            style="height:600px;width:70000px;border=none;">
             </iframe>
         </div>
 
